@@ -1,0 +1,36 @@
+CC=gcc
+TARGET=dev_test_dep
+SRCEXT=c
+LIB=
+
+INC=-I ../
+BUILDDIR=obj
+SRCDIR=src
+SOURCES=$(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
+OBJECTS=$(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
+
+TEST_INC=-I test_inc
+TEST_BUILDDIR=obj
+TEST_SRCDIR=test_src
+TEST_SOURCES=$(shell find $(TEST_SRCDIR) -type f -name *.$(SRCEXT))
+TEST_OBJECTS=$(patsubst $(TEST_SRCDIR)/%,$(TEST_BUILDDIR)/%,$(TEST_SOURCES:.$(SRCEXT)=.o))
+
+$(TARGET): $(TEST_OBJECTS)
+	echo " $(CC) $(TEST_INC) $^ -o $(TARGET) $(LIB)"; $(CC) $(TEST_INC) $^ -o $(TARGET) $(LIB)
+
+$(TEST_BUILDDIR)/%.o: $(TEST_SRCDIR)/%.$(SRCEXT)
+	$(CC) $(TEST_INC) -c -o $@ $<
+
+$(TARGET): $(OBJECTS)
+	echo " $(CC) $(INC) $^ -o $(TARGET) $(LIB)"; $(CC) $(INC) $^ -o $(TARGET) $(LIB)
+
+$(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
+	$(CC) $(INC) -c -o $@ $<
+
+
+pid_run:
+	sh -c 'echo $$; exec $(EXEC)'
+
+clean:
+	@echo " find . -type f -name '*.o' -delete"; find . -type f -name '*.o' -delete 2>/dev/null || true
+	@echo " rm ./$(TARGET)"; rm ./$(TARGET) 2>/dev/null || true

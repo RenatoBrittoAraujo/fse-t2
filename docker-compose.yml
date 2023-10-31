@@ -1,0 +1,25 @@
+# runs 3 containers for 3 instances of rasp 
+version: '3'
+
+services:
+  c1:
+    container_name: c1
+    build: main
+    restart: "unless-stopped"
+    ports:
+      - '6967:80'
+    volumes:
+      - ./:/app
+    command: make -C app all_main_prod
+
+  c2:
+    container_name: c2
+    build: dep
+    environment:
+      Something: 1
+    restart: "unless-stopped"
+    ports:
+      - '6968:80'
+    volumes:
+      - ./:/app
+    command: make -C app all_dep_prod

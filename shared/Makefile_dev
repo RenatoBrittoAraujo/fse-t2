@@ -1,0 +1,19 @@
+CC=gcc
+SRCEXT=c
+LIB=-pthread
+TARGET=compilelock
+
+INC=-I ../
+BUILDDIR=obj
+SRCDIR=src
+SOURCES=$(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
+OBJECTS=$(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
+
+$(TARGET): $(OBJECTS)
+	@echo "lock" > $(TARGET)
+
+$(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
+	$(CC) $(INC) -c -o $@ $<
+
+clean:
+	@echo " find . -type f -name '*.o' -delete"; find . -type f -name '*.o' -delete 2>/dev/null || true

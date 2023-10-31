@@ -1,0 +1,43 @@
+CC=gcc
+TARGET=main_prod
+SRCEXT=c
+LIB=-l wiringPi -l bcm2835 -l pthread -lm -ldl
+INC=-I ../
+BUILDDIR=obj
+SRCDIR=src
+SHARED_BUILDDIR=../shared/obj
+SHARED_SRCDIR=../shared/src
+
+SOURCES=$(shell find $(SRCDIR) -type f -name '*.$(SRCEXT)')
+OBJECTS=$(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
+SHARED_SOURCES=$(shell find $(SHARED_SRCDIR) -type f -name '*.$(SRCEXT)')
+SHARED_OBJECTS=$(shell find $(SHARED_BUILDDIR) -type f -name '*.o')
+
+include ../.env
+export $(shell sed 's/=.*//' ../.env)
+
+$(SHARED_BUILDDIR)/%.o: $(SHARED_SRCDIR)/%.$(SRCEXT)
+	@echo [BUILDING SHARED OBJECTS] $@ $<
+	@make -f ../shared/Makefile -C ../shared dev 
+
+$(TARGET): $(OBJECTS)
+	@echo [BUILDING TARGET] $@ $<
+	@$(CC) $(INC) $(SHARED_OBJECTS) $^ -o $(TARGET) $(LIB)
+
+$(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
+	@echo [BUILDING OBJECTS] $@ $<
+	@$(CC) $(INC) -c -o $@ $<
+
+pid_run:
+	sh -c 'echo $$; exec $(EXEC)'
+
+run: 
+	$(shell sed '' ../.env) ./$(TARGET)
+
+log:
+	echo "objects =        $(OBJECTS)"
+	echo "shared_objects = $(SHARED_OBJECTS)"
+
+clean:
+	@find . -type f -name '*.o' -delete 2>/dev/null || true
+	@rm ./$(TARGET) 2>/dev/null || true

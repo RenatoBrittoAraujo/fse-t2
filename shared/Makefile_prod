@@ -1,0 +1,22 @@
+CC=gcc
+SRCEXT=c
+LIB=-l pthread -l wiringPi -l wiringPiI2C
+TARGET=compilelock_prod
+INC=-I ../
+BUILDDIR=obj
+SRCDIR=src
+SOURCES=$(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
+OBJECTS=$(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
+
+$(TARGET): $(OBJECTS)
+	echo "hey!!" > $(TARGET)
+
+$(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
+	$(CC) $(INC) $(LIB) -c -o $@ $<
+
+pid_run:
+	sh -c 'echo $$; exec $(EXEC)'
+
+clean:
+	@echo " find . -type f -name '*.o' -delete"; find . -type f -name '*.o' -delete 2>/dev/null || true
+	@echo " rm ./$(TARGET)"; rm ./$(TARGET) 2>/dev/null || true
